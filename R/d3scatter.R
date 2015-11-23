@@ -80,7 +80,12 @@ d3scatter <- function(data, x_var, y_var, color_var,
 #'
 #' @export
 d3scatterOutput <- function(outputId, width = '100%', height = '400px'){
-  shinyWidgetOutput(outputId, 'd3scatter', width, height, package = 'd3scatter')
+  htmltools::attachDependencies(
+    tagList(
+      shinyWidgetOutput(outputId, 'd3scatter', width, height, package = 'd3scatter')
+    ),
+    crosstalk::dependencies
+  )
 }
 
 #' @rdname d3scatter-shiny
