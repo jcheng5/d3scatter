@@ -1,4 +1,5 @@
 #' @import htmlwidgets
+#' @import crosstalk
 #' @export
 d3scatter <- function(data, x_var, y_var, color_var,
   x_label = NULL, y_label = NULL,
@@ -56,7 +57,8 @@ d3scatter <- function(data, x_var, y_var, color_var,
     x,
     width = width,
     height = height,
-    package = 'd3scatter'
+    package = 'd3scatter',
+    dependencies = crosstalk::dependencies
   )
 }
 

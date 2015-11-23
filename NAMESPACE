@@ -3,4 +3,5 @@
 export(d3scatter)
 export(d3scatterOutput)
 export(renderD3scatter)
+import(crosstalk)
 import(htmlwidgets)

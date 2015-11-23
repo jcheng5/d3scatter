@@ -95,7 +95,7 @@ function d3scatter(container) {
         .text(props.y_label);
 
     svg.classed("selection-active", function() {
-      return !brush.empty();
+      return props.selection && !props.selection.empty();
     });
 
     var dots = svg.selectAll(".dot")
@@ -110,14 +110,8 @@ function d3scatter(container) {
       .exit()
         .remove();
     dots
-        .cond(!brush.empty(), "classed", "selected", function(d) {
-          var ext = brush.extent();
-          var selected =
-            ext[0][0] <= d.x &&
-            ext[1][0] >= d.x &&
-            ext[0][1] <= d.y &&
-            ext[1][1] >= d.y;
-          return selected;
+        .cond(props.selection && !props.selection.empty(), "classed", "selected", function(d) {
+          return props.selection.has(d.key);
         })
         .cond(animate, "transition")
         .attr("cx", function(d) { return x(d.x); })
@@ -176,9 +170,41 @@ function d3scatter(container) {
   property("color_var");
   property("key");
 
+  // Let the world know when we start brushing.
+  brush.on("brushstart", function() {
+    crosstalk.var("active_brush_owner").set(container);
+  });
+  // When someone else starts brushing, clear our brush.
+  crosstalk.var("active_brush_owner").on("change", function(e) {
+    if (e.value !== container && !brush.empty()) {
+      brush.clear();
+      draw(false);
+    }
+  });
+
   brush.on("brush", function() {
+    var ext = brush.extent();
+    var data = HTMLWidgets.dataframeToD3({x: props.x_var, y: props.y_var, key: props.key});
+    var selectedKeys = data
+      .filter(function(obs) {
+        return obs.x >= ext[0][0] && obs.x <= ext[1][0] &&
+          obs.y >= ext[0][1] && obs.y <= ext[1][1];
+      })
+      .map(function(obs) {
+        return obs.key
+      });
+    crosstalk.var("selection").set(selectedKeys);
+  });
+
+  crosstalk.var("selection").on("change", function(e) {
+    if (!e.value) {
+      props.selection = null;
+    } else {
+      props.selection = d3.set(e.value);
+    }
     draw(false);
   });
+
 
   return draw;
 }
