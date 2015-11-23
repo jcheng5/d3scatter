@@ -1,18 +1,48 @@
 #' @import htmlwidgets
 #' @export
 d3scatter <- function(data, x_var, y_var, color_var,
-  x_label = x_var,
-  y_label = y_var,
+  x_label = NULL, y_label = NULL,
+  x_lim = NULL, y_lim = NULL,
   width = NULL, height = NULL) {
+
+  resolve <- function(value) {
+    if (inherits(value, "formula")) {
+      eval(value[[2]], data, environment(value))
+    }
+  }
+
+  if (x_label_missing <- missing(x_label)) {
+    x_label <- deparse(substitute(x_var))
+  }
+  if (y_label_missing <- missing(y_label)) {
+    y_label <- deparse(substitute(y_var))
+  }
+
+  if (inherits(x_var, "formula")) {
+    if (x_label_missing) {
+      x_label <- capture.output(print(x_var[[2]]))
+    }
+    x_var <- resolve(x_var)
+  }
+  if (inherits(y_var, "formula")) {
+    if (y_label_missing) {
+      y_label <- capture.output(print(y_var[[2]]))
+    }
+    y_var <- resolve(y_var)
+  }
+  color_var <- resolve(color_var)
+  x_lim <- resolve(x_lim)
+  y_lim <- resolve(y_lim)
 
   # forward options using x
   x = list(
-    data = data,
     x_var = x_var,
     y_var = y_var,
     color_var = color_var,
     x_label = x_label,
-    y_label = y_label
+    y_label = y_label,
+    x_lim = x_lim,
+    y_lim = y_lim
   )
 
   # create widget

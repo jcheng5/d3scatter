@@ -20,12 +20,13 @@ HTMLWidgets.widget({
     instance.scatter
         .width(el.offsetWidth)
         .height(el.offsetHeight)
-        .data(HTMLWidgets.dataframeToD3(x.data))
         .x_var(x.x_var)
         .y_var(x.y_var)
         .color_var(x.color_var)
         .x_label(x.x_label)
         .y_label(x.y_label)
+        .x_lim(x.x_lim)
+        .y_lim(x.y_lim)
         (!instance.firstRun);
 
     instance.firstRun = false;

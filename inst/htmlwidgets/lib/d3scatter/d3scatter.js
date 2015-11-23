@@ -53,6 +53,7 @@ function d3scatter(container) {
       .style("text-anchor", "end");
 
   function draw(animate) {
+    var data = HTMLWidgets.dataframeToD3({x: props.x_var, y: props.y_var, color: props.color_var});
     var width = props.width - margin.left - margin.right;
     var height = props.height - margin.top - margin.bottom;
     outerSvg
@@ -62,12 +63,17 @@ function d3scatter(container) {
     svg
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    x
-        .range([0, width])
-        .domain(d3.extent(props.data, function(d) { return d[props.x_var]; })).nice();
-    y
-        .range([height, 0])
-        .domain(d3.extent(props.data, function(d) { return d[props.y_var]; })).nice();
+    x.range([0, width]);
+    if (props.x_lim)
+      x.domain(props.x_lim);
+    else
+      x.domain(d3.extent(data, function(d) { return d.x; })).nice();
+
+    y.range([height, 0]);
+    if (props.y_lim)
+      y.domain(props.y_lim);
+    else
+      y.domain(d3.extent(data, function(d) { return d.y; })).nice();
 
     xAxisNode
         .cond(animate, "transition")
@@ -89,11 +95,11 @@ function d3scatter(container) {
     });
 
     var dots = svg.selectAll(".dot")
-        .data(props.data);
+        .data(data);
     dots
       .enter().append("circle")
-        .attr("cx", function(d) { return x(d[props.x_var]); })
-        .attr("cy", function(d) { return y(d[props.y_var]); })
+        .attr("cx", function(d) { return x(d.x); })
+        .attr("cy", function(d) { return y(d.y); })
         .attr("class", "dot")
         .attr("r", 3.5);
     dots
@@ -103,17 +109,17 @@ function d3scatter(container) {
         .classed("selected", function(d) {
           var ext = brush.extent();
           var selected =
-            ext[0][0] <= d[props.x_var] &&
-            ext[1][0] >= d[props.x_var] &&
-            ext[0][1] <= d[props.y_var] &&
-            ext[1][1] >= d[props.y_var];
+            ext[0][0] <= d.x &&
+            ext[1][0] >= d.x &&
+            ext[0][1] <= d.y &&
+            ext[1][1] >= d.y;
           return selected;
         })
         .cond(animate, "transition")
-        .attr("cx", function(d) { return x(d[props.x_var]); })
-        .attr("cy", function(d) { return y(d[props.y_var]); })
+        .attr("cx", function(d) { return x(d.x); })
+        .attr("cy", function(d) { return y(d.y); })
         .style("fill", function(d) {
-          return color(d[props.color_var]);
+          return color(d.color);
         });
 
     var legend = svg.selectAll(".legend")
@@ -157,11 +163,12 @@ function d3scatter(container) {
 
   property("width");
   property("height");
-  property("data");
   property("x_var");
   property("x_label");
+  property("x_lim");
   property("y_var");
   property("y_label");
+  property("y_lim");
   property("color_var");
 
   brush.on("brush", function() {
