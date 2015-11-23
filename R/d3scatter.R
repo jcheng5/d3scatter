@@ -8,6 +8,8 @@ d3scatter <- function(data, x_var, y_var, color_var,
   resolve <- function(value) {
     if (inherits(value, "formula")) {
       eval(value[[2]], data, environment(value))
+    } else {
+      value
     }
   }
 
