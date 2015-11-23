@@ -3,6 +3,7 @@
 d3scatter <- function(data, x_var, y_var, color_var,
   x_label = NULL, y_label = NULL,
   x_lim = NULL, y_lim = NULL,
+  key = row.names(data),
   width = NULL, height = NULL) {
 
   resolve <- function(value) {
@@ -35,6 +36,7 @@ d3scatter <- function(data, x_var, y_var, color_var,
   color_var <- resolve(color_var)
   x_lim <- resolve(x_lim)
   y_lim <- resolve(y_lim)
+  key <- resolve(key)
 
   # forward options using x
   x = list(
@@ -44,7 +46,8 @@ d3scatter <- function(data, x_var, y_var, color_var,
     x_label = x_label,
     y_label = y_label,
     x_lim = x_lim,
-    y_lim = y_lim
+    y_lim = y_lim,
+    key = key
   )
 
   # create widget

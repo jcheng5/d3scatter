@@ -27,6 +27,7 @@ HTMLWidgets.widget({
         .y_label(x.y_label)
         .x_lim(x.x_lim)
         .y_lim(x.y_lim)
+        .key(x.key)
         (!instance.firstRun);
 
     instance.firstRun = false;

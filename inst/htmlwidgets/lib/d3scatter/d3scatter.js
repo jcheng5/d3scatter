@@ -53,7 +53,11 @@ function d3scatter(container) {
       .style("text-anchor", "end");
 
   function draw(animate) {
-    var data = HTMLWidgets.dataframeToD3({x: props.x_var, y: props.y_var, color: props.color_var});
+    var data = {x: props.x_var, y: props.y_var, color: props.color_var};
+    if (props.key) {
+      data.key = props.key;
+    }
+    data = HTMLWidgets.dataframeToD3(data);
     var width = props.width - margin.left - margin.right;
     var height = props.height - margin.top - margin.bottom;
     outerSvg
@@ -170,6 +174,7 @@ function d3scatter(container) {
   property("y_label");
   property("y_lim");
   property("color_var");
+  property("key");
 
   brush.on("brush", function() {
     draw(false);
