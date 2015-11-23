@@ -106,7 +106,7 @@ function d3scatter(container) {
       .exit()
         .remove();
     dots
-        .classed("selected", function(d) {
+        .cond(!brush.empty(), "classed", "selected", function(d) {
           var ext = brush.extent();
           var selected =
             ext[0][0] <= d.x &&
