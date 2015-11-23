@@ -1,0 +1,54 @@
+#' @import htmlwidgets
+#' @export
+d3scatter <- function(data, x_var, y_var, color_var,
+  x_label = x_var,
+  y_label = y_var,
+  width = NULL, height = NULL) {
+
+  # forward options using x
+  x = list(
+    data = data,
+    x_var = x_var,
+    y_var = y_var,
+    color_var = color_var,
+    x_label = x_label,
+    y_label = y_label
+  )
+
+  # create widget
+  htmlwidgets::createWidget(
+    name = 'd3scatter',
+    x,
+    width = width,
+    height = height,
+    package = 'd3scatter'
+  )
+}
+
+#' Shiny bindings for d3scatter
+#'
+#' Output and render functions for using d3scatter within Shiny
+#' applications and interactive Rmd documents.
+#'
+#' @param outputId output variable to read from
+#' @param width,height Must be a valid CSS unit (like \code{'100\%'},
+#'   \code{'400px'}, \code{'auto'}) or a number, which will be coerced to a
+#'   string and have \code{'px'} appended.
+#' @param expr An expression that generates a d3scatter
+#' @param env The environment in which to evaluate \code{expr}.
+#' @param quoted Is \code{expr} a quoted expression (with \code{quote()})? This
+#'   is useful if you want to save an expression in a variable.
+#'
+#' @name d3scatter-shiny
+#'
+#' @export
+d3scatterOutput <- function(outputId, width = '100%', height = '400px'){
+  shinyWidgetOutput(outputId, 'd3scatter', width, height, package = 'd3scatter')
+}
+
+#' @rdname d3scatter-shiny
+#' @export
+renderD3scatter <- function(expr, env = parent.frame(), quoted = FALSE) {
+  if (!quoted) { expr <- substitute(expr) } # force quoted
+  shinyRenderWidget(expr, d3scatterOutput, env, quoted = TRUE)
+}
