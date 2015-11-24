@@ -148,7 +148,9 @@ function d3scatter(container) {
         .attr("x", width - 24)
         .text(function(d) { return d; });
 
-    svg.call(brush);
+    if (props.group && props.key) {
+      svg.call(brush);
+    }
   }
 
   function property(name) {
@@ -170,41 +172,53 @@ function d3scatter(container) {
   property("color_var");
   property("key");
 
-  // Let the world know when we start brushing.
-  brush.on("brushstart", function() {
-    crosstalk.var("active_brush_owner").set(container);
-  });
-  // When someone else starts brushing, clear our brush.
-  crosstalk.var("active_brush_owner").on("change", function(e) {
-    if (e.value !== container && !brush.empty()) {
-      brush.clear();
+  draw.group = function(value) {
+    if (!arguments.length) return props.group;
+
+    props.group = value;
+
+    var ctgrp = crosstalk.group(props.group);
+
+    // Let the world know when we start brushing.
+    brush.on("brushstart", function() {
+      ctgrp.var("active_brush_owner").set(container);
+    });
+    // When someone else starts brushing, clear our brush.
+    ctgrp.var("active_brush_owner").on("change", function(e) {
+      if (e.value !== container && !brush.empty()) {
+        brush.clear();
+        draw(false);
+      }
+    });
+
+    brush.on("brush", function() {
+      var ext = brush.extent();
+      var data = HTMLWidgets.dataframeToD3({x: props.x_var, y: props.y_var, key: props.key});
+      var selectedKeys = data
+        .filter(function(obs) {
+          return obs.x >= ext[0][0] && obs.x <= ext[1][0] &&
+            obs.y >= ext[0][1] && obs.y <= ext[1][1];
+        })
+        .map(function(obs) {
+          return obs.key
+        });
+      ctgrp.var("selection").set(selectedKeys);
+    });
+
+    ctgrp.var("selection").on("change", function(e) {
+      if (!props.group || !props.key)
+        return;
+
+      if (!e.value) {
+        props.selection = null;
+      } else {
+        props.selection = d3.set(e.value);
+      }
       draw(false);
-    }
-  });
+    });
 
-  brush.on("brush", function() {
-    var ext = brush.extent();
-    var data = HTMLWidgets.dataframeToD3({x: props.x_var, y: props.y_var, key: props.key});
-    var selectedKeys = data
-      .filter(function(obs) {
-        return obs.x >= ext[0][0] && obs.x <= ext[1][0] &&
-          obs.y >= ext[0][1] && obs.y <= ext[1][1];
-      })
-      .map(function(obs) {
-        return obs.key
-      });
-    crosstalk.var("selection").set(selectedKeys);
-  });
-
-  crosstalk.var("selection").on("change", function(e) {
-    if (!e.value) {
-      props.selection = null;
-    } else {
-      props.selection = d3.set(e.value);
-    }
-    draw(false);
-  });
-
+    return draw;
+  };
 
   return draw;
 }

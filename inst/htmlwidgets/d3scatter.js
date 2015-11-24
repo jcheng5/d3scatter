@@ -28,6 +28,7 @@ HTMLWidgets.widget({
         .x_lim(x.x_lim)
         .y_lim(x.y_lim)
         .key(x.key)
+        .group(x.group)
         (!instance.firstRun);
 
     instance.firstRun = false;

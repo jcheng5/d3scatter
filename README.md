@@ -18,8 +18,8 @@ library(htmltools)
 library(d3scatter)
 
 browsable(tagList(
-  d3scatter(iris, ~Petal.Width, ~Petal.Length, ~Species),
-  d3scatter(iris, ~Sepal.Width, ~Sepal.Length, ~Species)
+  d3scatter(iris, ~Petal.Width, ~Petal.Length, ~Species, group = "A"),
+  d3scatter(iris, ~Sepal.Width, ~Sepal.Length, ~Species, group = "A")
 ))
 ```
 
@@ -49,7 +49,8 @@ server <- function(input, output, session) {
       ~Sepal.Length, ~Sepal.Width,
       ~toupper(Species),
       x_lim = ~grDevices::extendrange(iris$Sepal.Length, f = jitter_by),
-      y_lim = ~grDevices::extendrange(iris$Sepal.Width, f = jitter_by)
+      y_lim = ~grDevices::extendrange(iris$Sepal.Width, f = jitter_by),
+      group = "A"
     )
   })
   output$scatter2 <- renderD3scatter({
@@ -57,7 +58,8 @@ server <- function(input, output, session) {
       ~Petal.Length, ~Petal.Width,
       ~toupper(Species),
       x_lim = ~grDevices::extendrange(iris$Petal.Length, f = jitter_by),
-      y_lim = ~grDevices::extendrange(iris$Petal.Width, f = jitter_by)
+      y_lim = ~grDevices::extendrange(iris$Petal.Width, f = jitter_by),
+      group = "A"
     )
   })
 }
