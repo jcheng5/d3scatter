@@ -23,7 +23,7 @@ browsable(tagList(
 ))
 ```
 
-Updating data
+Updating data, using Shiny
 
 ```r
 library(shiny)
@@ -62,6 +62,52 @@ server <- function(input, output, session) {
       group = "A"
     )
   })
+}
+
+shinyApp(ui, server)
+```
+
+Linked brushing between d3scatter and ggplot2, using Shiny
+
+```r
+library(shiny)
+library(d3scatter)
+library(dplyr)
+library(ggplot2)
+
+ui <- fluidPage(
+  d3scatterOutput("scatter1", height = 300),
+  plotOutput("plot1", height = 300, brush = brushOpts("brush", direction = "x"))
+)
+
+server <- function(input, output, session) {
+  output$scatter1 <- renderD3scatter({
+    d3scatter(iris,
+      ~Sepal.Length, ~Sepal.Width,
+      ~toupper(Species),
+      group = "A"
+    )
+  })
+
+  sd <- crosstalk::SharedData$new(iris %>% add_rownames(), "rowname", group = "A")
+  
+  output$plot1 <- renderPlot({
+    df <- sd$data(TRUE)
+    df$selected_ <- factor(df$selected_, levels = c(TRUE, FALSE))
+    if (any(is.na(df$selected_))) {
+      ggplot(df, aes(x = Species)) + geom_bar()
+    } else {
+      ggplot(df, aes(x = Species, alpha = selected_)) + geom_bar() +
+        scale_alpha_manual(values = c(1.0, 0.2)) +
+        guides(alpha = FALSE)
+    }
+  })
+  observeEvent(input$brush, {
+    df <- brushedPoints(sd$data(FALSE), input$brush, allRows = TRUE)
+    selected <- row.names(df)[df$selected_]
+    str(selected)
+    sd$selection(selected)
+  }, ignoreNULL = FALSE)
 }
 
 shinyApp(ui, server)
