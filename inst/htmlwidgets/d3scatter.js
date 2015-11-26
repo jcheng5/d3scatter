@@ -4,41 +4,28 @@ HTMLWidgets.widget({
 
   type: 'output',
 
-  initialize: function(el, width, height) {
+  factory: function(el, width, height) {
 
-    var scatter = d3scatter(el)
-        .width(width)
-        .height(height);
+    var firstRun = true;
+    var scatter = d3scatter(el).width(width).height(height);
     return {
-      firstRun: true,
-      scatter: scatter
+      renderValue: function(value) {
+        scatter
+          .x_var(value.x_var)
+          .y_var(value.y_var)
+          .color_var(value.color_var)
+          .x_label(value.x_label)
+          .y_label(value.y_label)
+          .x_lim(value.x_lim)
+          .y_lim(value.y_lim)
+          .key(value.key)
+          .group(value.group)
+          (!firstRun);
+        firstRun = false;
+      },
+      resize: function(width, height) {
+        scatter.width(width).height(height)(false);
+      }
     };
-
-  },
-
-  renderValue: function(el, x, instance) {
-    instance.scatter
-        .width(el.offsetWidth)
-        .height(el.offsetHeight)
-        .x_var(x.x_var)
-        .y_var(x.y_var)
-        .color_var(x.color_var)
-        .x_label(x.x_label)
-        .y_label(x.y_label)
-        .x_lim(x.x_lim)
-        .y_lim(x.y_lim)
-        .key(x.key)
-        .group(x.group)
-        (!instance.firstRun);
-
-    instance.firstRun = false;
-  },
-
-  resize: function(el, width, height, instance) {
-    instance.scatter
-        .width(width)
-        .height(height)
-        (false);
   }
-
 });
