@@ -179,18 +179,6 @@ function d3scatter(container) {
 
     var ctgrp = crosstalk.group(props.group);
 
-    // Let the world know when we start brushing.
-    brush.on("brushstart", function() {
-      ctgrp.var("active_brush_owner").set(container);
-    });
-    // When someone else starts brushing, clear our brush.
-    ctgrp.var("active_brush_owner").on("change", function(e) {
-      if (e.value !== container && !brush.empty()) {
-        brush.clear();
-        draw(false);
-      }
-    });
-
     brush.on("brush", function() {
       var ext = brush.extent();
       var data = HTMLWidgets.dataframeToD3({x: props.x_var, y: props.y_var, key: props.key});
@@ -202,12 +190,16 @@ function d3scatter(container) {
         .map(function(obs) {
           return obs.key
         });
-      ctgrp.var("selection").set(selectedKeys);
+      ctgrp.var("selection").set(selectedKeys, {sender: container});
     });
 
     ctgrp.var("selection").on("change", function(e) {
       if (!props.group || !props.key)
         return;
+
+      if (e.sender !== container) {
+        brush.clear();
+      }
 
       if (!e.value) {
         props.selection = null;
