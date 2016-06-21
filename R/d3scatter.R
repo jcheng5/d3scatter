@@ -4,8 +4,16 @@
 d3scatter <- function(data, x_var, y_var, color_var,
   x_label = NULL, y_label = NULL,
   x_lim = NULL, y_lim = NULL,
-  key = row.names(data), group = NULL,
   width = NULL, height = NULL) {
+
+  if (is.SharedData(data)) {
+    key <- data$key()
+    group <- data$groupName()
+    data <- data$origData()
+  } else {
+    key <- NULL
+    group <- NULL
+  }
 
   resolve <- function(value) {
     if (inherits(value, "formula")) {
@@ -59,7 +67,7 @@ d3scatter <- function(data, x_var, y_var, color_var,
     width = width,
     height = height,
     package = 'd3scatter',
-    dependencies = crosstalk::dependencies
+    dependencies = crosstalk::crosstalkLibs()
   )
 }
 
@@ -85,7 +93,7 @@ d3scatterOutput <- function(outputId, width = '100%', height = '400px'){
     tagList(
       shinyWidgetOutput(outputId, 'd3scatter', width, height, package = 'd3scatter')
     ),
-    crosstalk::dependencies
+    crosstalk::crosstalkLibs()
   )
 }
 

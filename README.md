@@ -17,9 +17,11 @@ Linked brushing
 library(htmltools)
 library(d3scatter)
 
+sd <- SharedData$new(iris)
+
 browsable(tagList(
-  d3scatter(iris, ~Petal.Width, ~Petal.Length, ~Species, group = "A"),
-  d3scatter(iris, ~Sepal.Width, ~Sepal.Length, ~Species, group = "A")
+  d3scatter(sd, ~Petal.Width, ~Petal.Length, ~Species),
+  d3scatter(sd, ~Sepal.Width, ~Sepal.Length, ~Species)
 ))
 ```
 
@@ -42,15 +44,14 @@ server <- function(input, output, session) {
     iris$Sepal.Width <- jitter(iris$Sepal.Width, amount = jitter_by)
     iris$Petal.Length <- jitter(iris$Petal.Length, amount = jitter_by)
     iris$Petal.Width <- jitter(iris$Petal.Width, amount = jitter_by)
-    iris
+    SharedData$new(iris)
   })
   output$scatter1 <- renderD3scatter({
     d3scatter(jittered(),
       ~Sepal.Length, ~Sepal.Width,
       ~toupper(Species),
       x_lim = ~grDevices::extendrange(iris$Sepal.Length, f = jitter_by),
-      y_lim = ~grDevices::extendrange(iris$Sepal.Width, f = jitter_by),
-      group = "A"
+      y_lim = ~grDevices::extendrange(iris$Sepal.Width, f = jitter_by)
     )
   })
   output$scatter2 <- renderD3scatter({
@@ -58,8 +59,7 @@ server <- function(input, output, session) {
       ~Petal.Length, ~Petal.Width,
       ~toupper(Species),
       x_lim = ~grDevices::extendrange(iris$Petal.Length, f = jitter_by),
-      y_lim = ~grDevices::extendrange(iris$Petal.Width, f = jitter_by),
-      group = "A"
+      y_lim = ~grDevices::extendrange(iris$Petal.Width, f = jitter_by)
     )
   })
 }
@@ -81,16 +81,15 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+  sd <- crosstalk::SharedData$new(iris %>% add_rownames(), "rowname")
+  
   output$scatter1 <- renderD3scatter({
-    d3scatter(iris,
+    d3scatter(sd,
       ~Sepal.Length, ~Sepal.Width,
-      ~toupper(Species),
-      group = "A"
+      ~toupper(Species)
     )
   })
 
-  sd <- crosstalk::SharedData$new(iris %>% add_rownames(), "rowname", group = "A")
-  
   output$plot1 <- renderPlot({
     df <- sd$data(TRUE)
     df$selected_ <- factor(df$selected_, levels = c(TRUE, FALSE))

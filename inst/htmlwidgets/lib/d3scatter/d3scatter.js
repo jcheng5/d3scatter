@@ -98,8 +98,14 @@ function d3scatter(container) {
       return props.selection && !props.selection.empty();
     });
 
+    var filteredData = data;
+    if (props.filter) {
+      filteredData = data.filter(props.filter);
+    }
+
     var dots = svg.selectAll(".dot")
-        .data(data);
+        .data(filteredData, function(d, i) { return d.key; });
+
     dots
       .enter().append("circle")
         .attr("cx", function(d) { return x(d.x); })
@@ -208,6 +214,20 @@ function d3scatter(container) {
       }
       draw(false);
     });
+
+    var filterHandle = crosstalk.filter.createHandle(ctgrp);
+    function applyCrosstalkFilter(e) {
+      props.filter = function(d, i) {
+        if (!e.value) {
+          return true;
+        } else {
+          return e.value.indexOf(d.key) >= 0;
+        }
+      };
+      draw(false);
+    }
+    filterHandle.on("change", applyCrosstalkFilter);
+    applyCrosstalkFilter({value: filterHandle.filteredKeys});
 
     return draw;
   };
