@@ -1,7 +1,22 @@
+#' Create a scatter plot
+#'
+#' @param data A data frame or \link[crosstalk]{SharedData} object
+#' @param x One-sided formula indicating the column or expression for x values
+#' @param y One-sided formula indicating the column or expression for y values
+#' @param color One-sided formula indicating the column or expression for color
+#'   values
+#' @param x_label,y_label Labels for axes
+#' @param x_lim,y_lim Two-element numeric vectors indicating the limits for axes
+#' @param width,height Override default size (see
+#'   \link[htmltools]{validateCssUnit})
+#'
+#' @examples
+#' d3scatter(iris, ~Sepal.Width, ~Sepal.Length, color = ~Species)
+#'
 #' @import htmlwidgets
 #' @import crosstalk
 #' @export
-d3scatter <- function(data, x_var, y_var, color_var,
+d3scatter <- function(data, x, y, color = NULL,
   x_label = NULL, y_label = NULL,
   x_lim = NULL, y_lim = NULL,
   width = NULL, height = NULL) {
@@ -24,34 +39,46 @@ d3scatter <- function(data, x_var, y_var, color_var,
   }
 
   if (x_label_missing <- missing(x_label)) {
-    x_label <- deparse(substitute(x_var))
+    x_label <- deparse(substitute(x))
   }
   if (y_label_missing <- missing(y_label)) {
-    y_label <- deparse(substitute(y_var))
+    y_label <- deparse(substitute(y))
   }
 
-  if (inherits(x_var, "formula")) {
+  if (inherits(x, "formula")) {
     if (x_label_missing) {
-      x_label <- capture.output(print(x_var[[2]]))
+      x_label <- lazyeval::f_text(x)
     }
-    x_var <- resolve(x_var)
+    x <- resolve(x)
   }
-  if (inherits(y_var, "formula")) {
+  if (inherits(y, "formula")) {
     if (y_label_missing) {
-      y_label <- capture.output(print(y_var[[2]]))
+      y_label <- lazyeval::f_text(y)
     }
-    y_var <- resolve(y_var)
+    y <- resolve(y)
   }
-  color_var <- resolve(color_var)
+  color <- resolve(color)
+  color_spec <- if (is.numeric(color)) {
+    list(type = "linear", range = range(color))
+  } else if (is.factor(color)) {
+    list(type = "ordinal", values = levels(color))
+  } else if (is.null(color)) {
+    list(type = "constant", value = "#333333")
+  } else if (is.character(color)) {
+    list(type = "ordinal", values = unique(color))
+  } else {
+    stop("Unexpected color type ", class(color))
+  }
   x_lim <- resolve(x_lim)
   y_lim <- resolve(y_lim)
   key <- resolve(key)
 
   # forward options using x
   x = list(
-    x_var = x_var,
-    y_var = y_var,
-    color_var = color_var,
+    x_var = x,
+    y_var = y,
+    color_var = color,
+    color_spec = color_spec,
     x_label = x_label,
     y_label = y_label,
     x_lim = x_lim,

@@ -20,8 +20,6 @@ function d3scatter(container) {
 
   var y = d3.scale.linear();
 
-  var color = d3.scale.category10();
-
   var brush = d3.svg.brush()
       .x(x)
       .y(y);
@@ -53,7 +51,24 @@ function d3scatter(container) {
       .style("text-anchor", "end");
 
   function draw(animate) {
-    var data = {x: props.x_var, y: props.y_var, color: props.color_var};
+
+    var color_spec = props.color_spec;
+    var color;
+    if (color_spec.type === "constant") {
+      color = function() { return color_spec.value; };
+    } else if (color_spec.type === "ordinal") {
+      color = d3.scale.category10()
+        .domain(color_spec.values);
+    } else if (color_spec.type === "linear") {
+      color = d3.scale.linear()
+        .domain(color_spec.range)
+        .range(["red", "blue"]);
+    }
+
+    var data = {x: props.x_var, y: props.y_var};
+    if (props.color_var) {
+      data.color = props.color_var;
+    }
     if (props.key) {
       data.key = props.key;
     }
@@ -104,7 +119,9 @@ function d3scatter(container) {
     }
 
     var dots = svg.selectAll(".dot")
-        .data(filteredData, function(d, i) { return d.key; });
+        .data(filteredData, props.key ? function(d, i) {
+          return d.key;
+        } : void 0);
 
     dots
       .enter().append("circle")
@@ -126,33 +143,35 @@ function d3scatter(container) {
           return color(d.color);
         });
 
-    var legend = svg.selectAll(".legend")
-        .data(color.domain());
-    var legendNew = legend.enter().append("g")
-        .attr("class", "legend")
-        .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+    if (props.color_spec) {
+      var legend = svg.selectAll(".legend")
+          .data(color.domain());
+      var legendNew = legend.enter().append("g")
+          .attr("class", "legend")
+          .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
 
-    legendNew.append("rect")
-        .attr("x", width - 18)
-        .attr("width", 18)
-        .attr("height", 18);
+      legendNew.append("rect")
+          .attr("x", width - 18)
+          .attr("width", 18)
+          .attr("height", 18);
 
-    legendNew.append("text")
-        .attr("x", width - 24)
-        .attr("y", 9)
-        .attr("dy", ".35em")
-        .style("text-anchor", "end");
+      legendNew.append("text")
+          .attr("x", width - 24)
+          .attr("y", 9)
+          .attr("dy", ".35em")
+          .style("text-anchor", "end");
 
-    legend.exit().remove();
+      legend.exit().remove();
 
-    legend.selectAll("rect")
-        .cond(animate, "transition")
-        .attr("x", width - 18)
-        .style("fill", color);
-    legend.selectAll("text")
-        .cond(animate, "transition")
-        .attr("x", width - 24)
-        .text(function(d) { return d; });
+      legend.selectAll("rect")
+          .cond(animate, "transition")
+          .attr("x", width - 18)
+          .style("fill", color);
+      legend.selectAll("text")
+          .cond(animate, "transition")
+          .attr("x", width - 24)
+          .text(function(d) { return d; });
+    }
 
     if (props.group && props.key) {
       svg.call(brush);
@@ -176,6 +195,7 @@ function d3scatter(container) {
   property("y_label");
   property("y_lim");
   property("color_var");
+  property("color_spec");
   property("key");
 
   draw.group = function(value) {
@@ -194,7 +214,7 @@ function d3scatter(container) {
             obs.y >= ext[0][1] && obs.y <= ext[1][1];
         })
         .map(function(obs) {
-          return obs.key
+          return obs.key;
         });
       ctgrp.var("selection").set(selectedKeys, {sender: container});
     });

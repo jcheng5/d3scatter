@@ -14,6 +14,7 @@ HTMLWidgets.widget({
           .x_var(value.x_var)
           .y_var(value.y_var)
           .color_var(value.color_var)
+          .color_spec(value.color_spec)
           .x_label(value.x_label)
           .y_label(value.y_label)
           .x_lim(value.x_lim)
