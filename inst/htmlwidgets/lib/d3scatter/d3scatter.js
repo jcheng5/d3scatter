@@ -13,6 +13,7 @@ if (!d3.selection.prototype.cond) {
 
 function d3scatter(container) {
   container = d3.select(container);
+  var dispatch = d3.dispatch("brush");
   var props = {};
   var margin = {top: 20, right: 20, bottom: 30, left: 40};
 
@@ -110,12 +111,12 @@ function d3scatter(container) {
         .text(props.y_label);
 
     svg.classed("selection-active", function() {
-      return props.selection && !props.selection.empty();
+      return props.selectionSet && !props.selectionSet.empty();
     });
 
     var filteredData = data;
-    if (props.filter) {
-      filteredData = data.filter(props.filter);
+    if (props.filterFunc) {
+      filteredData = data.filter(props.filterFunc);
     }
 
     var dots = svg.selectAll(".dot")
@@ -133,8 +134,8 @@ function d3scatter(container) {
       .exit()
         .remove();
     dots
-        .cond(props.selection && !props.selection.empty(), "classed", "selected", function(d) {
-          return props.selection.has(d.key);
+        .cond(props.selectionSet && !props.selectionSet.empty(), "classed", "selected", function(d) {
+          return props.selectionSet.has(d.key);
         })
         .cond(animate, "transition")
         .attr("cx", function(d) { return x(d.x); })
@@ -173,9 +174,7 @@ function d3scatter(container) {
           .text(function(d) { return d; });
     }
 
-    if (props.group && props.key) {
-      svg.call(brush);
-    }
+    svg.call(brush);
   }
 
   function property(name) {
@@ -198,58 +197,51 @@ function d3scatter(container) {
   property("color_spec");
   property("key");
 
-  draw.group = function(value) {
-    if (!arguments.length) return props.group;
+  draw.on = function(eventType, listener) {
+    dispatch.on(eventType, listener);
+  };
 
-    props.group = value;
+  brush.on("brush", function() {
+    var ext = brush.extent();
+    var data = HTMLWidgets.dataframeToD3({x: props.x_var, y: props.y_var, key: props.key});
+    var selectedKeys = data
+      .filter(function(obs) {
+        return obs.x >= ext[0][0] && obs.x <= ext[1][0] &&
+          obs.y >= ext[0][1] && obs.y <= ext[1][1];
+      })
+      .map(function(obs) {
+        return obs.key;
+      });
+    dispatch.brush.call(draw, selectedKeys);
+  });
 
-    var ctsel = new crosstalk.SelectionHandle(props.group);
+  draw.selection = function(value) {
+    if (!arguments.length) return props.selection;
 
-    brush.on("brush", function() {
-      var ext = brush.extent();
-      var data = HTMLWidgets.dataframeToD3({x: props.x_var, y: props.y_var, key: props.key});
-      var selectedKeys = data
-        .filter(function(obs) {
-          return obs.x >= ext[0][0] && obs.x <= ext[1][0] &&
-            obs.y >= ext[0][1] && obs.y <= ext[1][1];
-        })
-        .map(function(obs) {
-          return obs.key;
-        });
-      ctsel.set(selectedKeys);
-    });
+    props.selection = value;
+    props.selectionSet = value ? d3.set(value) : null;
+    draw(false);
+  };
 
-    ctsel.on("change", function(e) {
-      if (!props.group || !props.key)
-        return;
+  draw.filter = function(value) {
+    if (!arguments.length) return props.filter;
 
-      if (e.sender !== ctsel) {
-        brush.clear();
+    props.filter = value;
+
+    if (!props.filter) {
+      props.filterFunc = function(d, i) { return true; }
+    } else {
+      var filterSet = d3.set(value);
+      props.filterFunc = function(d, i) {
+        return filterSet.has(d.key);
       }
-
-      if (!e.value) {
-        props.selection = null;
-      } else {
-        props.selection = d3.set(e.value);
-      }
-      draw(false);
-    });
-
-    var filterHandle = new crosstalk.FilterHandle(props.group);
-    function applyCrosstalkFilter(e) {
-      props.filter = function(d, i) {
-        if (!e.value) {
-          return true;
-        } else {
-          return e.value.indexOf(d.key) >= 0;
-        }
-      };
-      draw(false);
     }
-    filterHandle.on("change", applyCrosstalkFilter);
-    applyCrosstalkFilter({value: filterHandle.filteredKeys});
 
-    return draw;
+    draw(false);
+  };
+
+  draw.clearBrush = function() {
+    brush.clear();
   };
 
   return draw;

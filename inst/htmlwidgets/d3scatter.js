@@ -19,9 +19,9 @@ HTMLWidgets.widget({
           .y_label(value.y_label)
           .x_lim(value.x_lim)
           .y_lim(value.y_lim)
-          .key(value.key)
-          .group(value.group)
-          (!firstRun);
+          .key(value.key);
+
+        scatter(!firstRun);
         firstRun = false;
       },
       resize: function(width, height) {
