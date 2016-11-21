@@ -203,7 +203,7 @@ function d3scatter(container) {
 
     props.group = value;
 
-    var ctgrp = crosstalk.group(props.group);
+    var ctsel = new crosstalk.SelectionHandle(props.group);
 
     brush.on("brush", function() {
       var ext = brush.extent();
@@ -216,14 +216,14 @@ function d3scatter(container) {
         .map(function(obs) {
           return obs.key;
         });
-      ctgrp.var("selection").set(selectedKeys, {sender: container});
+      ctsel.set(selectedKeys);
     });
 
-    ctgrp.var("selection").on("change", function(e) {
+    ctsel.on("change", function(e) {
       if (!props.group || !props.key)
         return;
 
-      if (e.sender !== container) {
+      if (e.sender !== ctsel) {
         brush.clear();
       }
 
@@ -235,7 +235,7 @@ function d3scatter(container) {
       draw(false);
     });
 
-    var filterHandle = crosstalk.filter.createHandle(ctgrp);
+    var filterHandle = new crosstalk.FilterHandle(props.group);
     function applyCrosstalkFilter(e) {
       props.filter = function(d, i) {
         if (!e.value) {
