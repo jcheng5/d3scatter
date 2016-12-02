@@ -59,7 +59,9 @@ function d3scatter(container) {
       color = function() { return color_spec.value; };
     } else if (color_spec.type === "ordinal") {
       color = d3.scale.category10()
-        .domain(color_spec.values);
+        .domain(typeof(color_spec.values) === "string"
+            ? [color_spec.values, color_spec.values]
+            : color_spec.values);
     } else if (color_spec.type === "linear") {
       color = d3.scale.linear()
         .domain(color_spec.range)

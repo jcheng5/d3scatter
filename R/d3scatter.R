@@ -65,7 +65,7 @@ d3scatter <- function(data, x, y, color = NULL,
   } else if (is.null(color)) {
     list(type = "constant", value = "#333333")
   } else if (is.character(color)) {
-    if (length(color) > 1) {
+    if (length(color) > 1 || inherits(try(col2rgb(color), silent = TRUE), "try-error")) {
       list(type = "ordinal", values = unique(color))
     } else {
       list(type = "constant", value = color)
@@ -77,17 +77,23 @@ d3scatter <- function(data, x, y, color = NULL,
   y_lim <- resolve(y_lim)
   key <- resolve(key)
 
+  df <- data.frame(stringsAsFactors = FALSE,
+    x = x,
+    y = y,
+    color = if (color_spec$type != "constant") color else NULL
+  )
+  if (!is.null(key)) {
+    df <- cbind(df, key = key)
+  }
+
   # forward options using x
   x = list(
-    x_var = x,
-    y_var = y,
-    color_var = if (color_spec$type != "constant") color else NULL,
+    data = df,
     color_spec = color_spec,
     x_label = x_label,
     y_label = y_label,
     x_lim = x_lim,
     y_lim = y_lim,
-    key = key,
     group = group
   )
 
