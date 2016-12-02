@@ -79,17 +79,20 @@ d3scatter <- function(data, x, y, color = NULL,
 
   df <- data.frame(stringsAsFactors = FALSE,
     x = x,
-    y = y,
-    color = if (color_spec$type != "constant") color else NULL
+    y = y
   )
   if (!is.null(key)) {
     df <- cbind(df, key = key)
+  }
+  if (color_spec$type != "constant") {
+    df <- cbind(df, color = color)
   }
 
   # forward options using x
   x = list(
     data = df,
     color_spec = color_spec,
+    color = color,
     x_label = x_label,
     y_label = y_label,
     x_lim = x_lim,
