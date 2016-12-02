@@ -65,7 +65,11 @@ d3scatter <- function(data, x, y, color = NULL,
   } else if (is.null(color)) {
     list(type = "constant", value = "#333333")
   } else if (is.character(color)) {
-    list(type = "ordinal", values = unique(color))
+    if (length(color) > 1) {
+      list(type = "ordinal", values = unique(color))
+    } else {
+      list(type = "constant", value = color)
+    }
   } else {
     stop("Unexpected color type ", class(color))
   }
@@ -77,7 +81,7 @@ d3scatter <- function(data, x, y, color = NULL,
   x = list(
     x_var = x,
     y_var = y,
-    color_var = color,
+    color_var = if (color_spec$type != "constant") color else NULL,
     color_spec = color_spec,
     x_label = x_label,
     y_label = y_label,
