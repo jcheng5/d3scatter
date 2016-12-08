@@ -2,8 +2,11 @@ Package: d3scatter
 Type: Package
 Title: Demo of d3 scatter plot; testbed for crosstalk library
 Version: 0.1.0
-Author: Joe Cheng <joe@rstudio.com>
-Maintainer: Joe Cheng <joe@rstudio.com>
+Authors@R: c(
+    person("Joe", "Cheng", role = c("aut", "cre"), email = "joe@rstudio.com"),
+    person(family = "RStudio", role = "cph"),
+    person("Mike", "Bostock", role = c("ctb", "cph"), comment = "d3 library")
+    )
 Description: Simple d3 scatter plot htmlwidget, based on Mike Bostock's block that launched a thousand scatter plots: http://bl.ocks.org/mbostock/3887118
 License: GPL (>=3)
 LazyData: TRUE
