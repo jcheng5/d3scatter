@@ -1,7 +1,7 @@
 Package: d3scatter
 Type: Package
 Title: Demo of d3 scatter plot; testbed for crosstalk library
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Joe", "Cheng", role = c("aut", "cre"), email = "joe@rstudio.com"),
     person(family = "RStudio", role = "cph"),
