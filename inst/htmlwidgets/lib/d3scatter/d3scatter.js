@@ -147,6 +147,7 @@ function d3scatter(container) {
         });
 
     if (props.color_spec && color.domain) {
+      svg.selectAll(".legend").remove();
       var legend = svg.selectAll(".legend")
           .data(color.domain());
       var legendNew = legend.enter().append("g")
