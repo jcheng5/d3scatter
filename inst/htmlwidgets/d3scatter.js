@@ -44,6 +44,9 @@ HTMLWidgets.widget({
 
         scatter(!firstRun);
         firstRun = false;
+
+        sel_handle.invokeChangeHandler();
+        filter_handle.invokeChangeHandler();
       },
       resize: function(width, height) {
         scatter.width(width).height(height)(false);
